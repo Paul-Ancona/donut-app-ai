@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../dummy_data.dart';
+import '../models/product.dart';
 import '../providers/cart_provider.dart';
 
 class ProductDetailScreen extends StatelessWidget {
@@ -10,8 +10,7 @@ class ProductDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final productId = ModalRoute.of(context)!.settings.arguments as String;
-    final product = dummyProducts.firstWhere((p) => p.id == productId);
+    final product = ModalRoute.of(context)!.settings.arguments as Product;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -62,28 +61,25 @@ class ProductDetailScreen extends StatelessWidget {
                 children: [
                   const Text(
                     'Ingredients',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _buildIngredientPill('Sugar', product.ingredients['Sugar']!, '2%', Colors.blue.shade100),
-                      _buildIngredientPill('Salt', product.ingredients['Salt']!, '.3%', Colors.grey.shade100),
-                      _buildIngredientPill('Fat', product.ingredients['Fat']!, '12%', Colors.orange.shade100),
-                      _buildIngredientPill('Energy', product.ingredients['Energy']!, '40%', Colors.pink.shade100),
-                    ],
+                  Wrap(
+                    spacing: 8.0,
+                    runSpacing: 16.0,
+                    children: product.ingredients.entries.map((entry) {
+                      return _buildIngredientPill(
+                        entry.key,
+                        entry.value,
+                        'N/A', // Invented percentage or placeholder as requested
+                        Colors.blue.shade100,
+                      );
+                    }).toList(),
                   ),
                   const SizedBox(height: 24),
                   const Text(
                     'Details',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 12),
                   Text(
@@ -103,9 +99,7 @@ class ProductDetailScreen extends StatelessWidget {
       ),
       bottomSheet: Container(
         padding: const EdgeInsets.all(24),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-        ),
+        decoration: const BoxDecoration(color: Colors.white),
         child: Container(
           height: 70,
           padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -130,16 +124,16 @@ class ProductDetailScreen extends StatelessWidget {
                   ),
                   Text(
                     'Delivery Not Included',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey.shade500,
-                    ),
+                    style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
                   ),
                 ],
               ),
               GestureDetector(
                 onTap: () {
-                  Provider.of<CartProvider>(context, listen: false).addItem(product);
+                  Provider.of<CartProvider>(
+                    context,
+                    listen: false,
+                  ).addItem(product);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text('${product.name} added to cart!'),
@@ -163,7 +157,12 @@ class ProductDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildIngredientPill(String title, String value, String percent, Color color) {
+  Widget _buildIngredientPill(
+    String title,
+    String value,
+    String percent,
+    Color color,
+  ) {
     return Container(
       width: 70,
       padding: const EdgeInsets.symmetric(vertical: 12),
@@ -185,15 +184,12 @@ class ProductDetailScreen extends StatelessWidget {
           const SizedBox(height: 8),
           Container(
             padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: color,
-              shape: BoxShape.circle,
-            ),
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
             child: Text(
               percent,
               style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
             ),
-          )
+          ),
         ],
       ),
     );
